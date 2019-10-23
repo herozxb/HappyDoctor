@@ -25,10 +25,16 @@ pretrained_path = '/home/deep/bio-bert/BioBertFolder/biobert_v1.0_pubmed_pmc/'
 bert_ffn_weight_file = '/home/deep/bio-bert/newFolder/models/bertffn_crossentropy/bertffn'
 embedding_file = '/home/deep/bio-bert/Float16EmbeddingsExpanded5-27-19.pkl'
 
-doc = RetreiveQADoc(pretrained_path=pretrained_path,
-ffn_weight_file=None,
-bert_ffn_weight_file=bert_ffn_weight_file,
-embedding_file=embedding_file)
+global counter
+counter = 0
+
+if counter == 0: 
+    
+    doc = RetreiveQADoc(pretrained_path=pretrained_path,
+    ffn_weight_file=None,
+    bert_ffn_weight_file=bert_ffn_weight_file,
+    embedding_file=embedding_file)
+    counter = counter + 1
 
 question_text = "Girl's arm, hair is long and long"
 

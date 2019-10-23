@@ -22,6 +22,7 @@ def index(request):
 		#print(json_data)
 	image_feature = json.loads(json_data["List"])
 	#print(image_feature)
+  return [b"Hello World"] # python3
 '''
 	#############################Id search#################################
 	if image_feature[0] == '9871':
