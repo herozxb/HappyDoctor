@@ -1,0 +1,72 @@
+h2 {
+    margin-bottom: 6px;
+}
+
+.img_comment {
+	font-style: italic;
+}
+
+a, a:active, a:visited {
+	text-align: center;
+	color: #2664b2;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+#twitter_sub_header {
+	margin: 0 auto 0 auto;
+	width: 80%; /* largeur obligatoire pour être centré */
+	background-color: #FFF;
+	text-align: center;
+	padding: 6px 12px 0 12px;
+	color: #8A8A8A;
+}
+
+/* Table */
+
+table.data_table {
+	border-collapse:collapse;
+	margin-top: 8px;
+}
+
+table.data_table td, table.data_table th {
+	border:1px solid #DCDCDC;
+	padding:5px;
+}
+
+/* Automatically wrap code blocks */
+
+pre {
+	white-space: pre-wrap;       /* Since CSS 2.1 */
+	white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	white-space: -pre-wrap;      /* Opera 4-6 */
+	white-space: -o-pre-wrap;    /* Opera 7 */
+	word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+/* Stats tables */
+
+td.stats_table {
+    border: 1px solid black;
+    padding: 4px 8px 4px 8px;
+    font-size: 80%;
+}
+
+td.stats_table_right {
+    text-align: right;
+}
+
+td.stats_table_center {
+    text-align: center;
+}
+
+th.stats_table {
+    border: 1px solid black;
+    padding: 4px 8px 4px 8px;
+    background-color: #DEDEDE;
+    text-align: center;
+    font-size: 90%;
+}

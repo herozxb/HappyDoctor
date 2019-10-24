@@ -19,8 +19,8 @@ app = Flask('HappyDoctor')
 MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'crack_detection.h5')
 
 # Load trained model
-model = tf.keras.models.load_model(MODEL_PATH)
-model._make_predict_function()
+#model = tf.keras.models.load_model(MODEL_PATH)
+#model._make_predict_function()
 print('Model loaded. Start serving...')
 
 from docproduct.predictor import RetreiveQADoc
@@ -34,7 +34,7 @@ doc = RetreiveQADoc(pretrained_path=pretrained_path,ffn_weight_file=None,bert_ff
 print('Model loaded. Check http://127.0.0.1:8080/')
 
 
-def predict(img, model):
+def predict(img):
 
     question_text = "anxiety"
 
@@ -63,7 +63,7 @@ def index():
 def predict_image_class():
     img = request.files['file'].read()
     img = Image.open(io.BytesIO(img))
-    prediction = predict(img, model)
+    prediction = predict(img)
     #class_name = "crack" if prediction[0] < 0.5 else "no_crack"
     #response = {"prediction": class_name}
     return jsonify(0)

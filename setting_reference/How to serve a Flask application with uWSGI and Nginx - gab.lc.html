@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>How to serve a Flask application with uWSGI and Nginx - gab.lc</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="How%20to%20serve%20a%20Flask%20application%20with%20uWSGI%20and%20Nginx%20-%20gab.lc_files/style.css">
+    <link rel="stylesheet" type="text/css" href="How%20to%20serve%20a%20Flask%20application%20with%20uWSGI%20and%20Nginx%20-%20gab.lc_files/supplement.css">
+
+    <!-- purecss -->
+    <link rel="stylesheet" href="How%20to%20serve%20a%20Flask%20application%20with%20uWSGI%20and%20Nginx%20-%20gab.lc_files/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+        <link rel="stylesheet" href="How%20to%20serve%20a%20Flask%20application%20with%20uWSGI%20and%20Nginx%20-%20gab.lc_files/grids-responsive-min.css">
+    <!--<![endif]-->
+
+    <script async="" src="How%20to%20serve%20a%20Flask%20application%20with%20uWSGI%20and%20Nginx%20-%20gab.lc_files/analytics.js"></script><script src="How%20to%20serve%20a%20Flask%20application%20with%20uWSGI%20and%20Nginx%20-%20gab.lc_files/email.js"></script>
+    <link rel="stylesheet" href="How%20to%20serve%20a%20Flask%20application%20with%20uWSGI%20and%20Nginx%20-%20gab.lc_files/darkula.css">
+    <script src="How%20to%20serve%20a%20Flask%20application%20with%20uWSGI%20and%20Nginx%20-%20gab.lc_files/highlight.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+</head>
+
+<body id="flask-nginx-uwsgi">
+
+    <nav>
+    <section>
+        <span class="home">
+            <a href="https://www.gab.lc/">Home</a>
+        </span>
+        <span class="links">
+            <a href="https://www.gab.lc/articles/">Articles</a>
+            <!-- <a href="/news/">News</a> -->
+            <a href="https://www.gab.lc/contact/">Contact</a>
+            <a href="https://www.gab.lc/about/">About</a>
+        </span>
+    </section>
+    </nav>
+
+    <main>
+
+<article>
+    <h1 id="title"><a href="https://www.gab.lc/articles/flask-nginx-uwsgi/">How to serve a Flask application with uWSGI and Nginx</a></h1>
+    <p class="meta">Published on Dec. 19, 2018 by <b>Gabriel Bordeaux</b></p>
+    <div id="post"><h3>Introduction</h3>
+<p>This is a simple introduction on how to serve a Python Flask application with uWSGI and Nginx on Ubuntu.</p>
+<h3>Prerequisite</h3>
+<p>Install Nginx and Python:</p>
+<pre><code class="language-bash hljs">sudo apt-get update
+sudo apt-get install python3-pip python3-dev nginx
+pip3 install uwsgi flask
+</code></pre>
+<h3>Create a basic Flask application</h3>
+<pre><code class="language-bash hljs">mkdir /var/www/html/my_app
+<span class="hljs-built_in">cd</span> /var/www/html/my_app
+</code></pre>
+<p>Create a file <code>app.py</code> with:</p>
+<pre><code class="language-py hljs python"><span class="hljs-comment">#!/usr/bin/python3</span>
+
+<span class="hljs-keyword">from</span> flask <span class="hljs-keyword">import</span> Flask
+app = Flask(__name__)
+
+<span class="hljs-meta">@app.route("/")</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">index</span><span class="hljs-params">()</span>:</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"""
+        Welcome to my website!&lt;br /&gt;&lt;br /&gt;
+        &lt;a href="/hello"&gt;Go to hello world&lt;/a&gt;
+    """</span>
+
+<span class="hljs-meta">@app.route("/hello")</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">hello</span><span class="hljs-params">()</span>:</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"""
+        Hello World!&lt;br /&gt;&lt;br /&gt;
+        &lt;a href="/"&gt;Back to index&lt;/a&gt;
+    """</span>
+
+<span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">'__main__'</span>:
+    <span class="hljs-comment"># Will make the server available externally as well</span>
+    app.run(host=<span class="hljs-string">'0.0.0.0'</span>)
+</code></pre>
+<h3>Test your application with flask built-in web server</h3>
+<p>Flask has a built in web server which you can use for test purposes. Just run:</p>
+<pre><code class="language-bash hljs">python3 app.py
+<span class="hljs-comment"># * Serving Flask app "app.py"</span>
+<span class="hljs-comment"># * Environment: production</span>
+<span class="hljs-comment">#   WARNING: Do not use the development server in a production environment.</span>
+<span class="hljs-comment">#   Use a production WSGI server instead.</span>
+<span class="hljs-comment"># * Debug mode: off</span>
+<span class="hljs-comment"># * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)</span>
+</code></pre>
+<p>Alternatively, you can also use:</p>
+<pre><code class="language-bash hljs">FLASK_APP=app.py flask run --host=0.0.0.0
+</code></pre>
+<p>And visit http://127.0.0.1:5000/.</p>
+<p>Once you are able to confirm that your Flask application is up and 
+running with the development web server, it is time to configure uWSGI 
+and Nginx.</p>
+<h3>Configure uWSGI</h3>
+<p>In the same directory, create a file <code>wsgi.py</code> with:</p>
+<pre><code class="language-python hljs"><span class="hljs-comment">#!/usr/bin/python3</span>
+
+<span class="hljs-keyword">from</span> app <span class="hljs-keyword">import</span> app <span class="hljs-keyword">as</span> application
+
+<span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">"__main__"</span>:
+    application.run()
+</code></pre>
+<p>You can then test uWSGI:</p>
+<pre><code class="language-bash hljs">uwsgi --socket 0.0.0.0:8000 --protocol=http -w wsgi
+</code></pre>
+<p>And visit http://127.0.0.1:8000/.</p>
+<h3>Create a uWSGI Configuration File</h3>
+<p>Also in your project directory, create a file <code>app.ini</code> with:</p>
+<pre><code class="hljs javascript">[uwsgi]
+<span class="hljs-built_in">module</span> = wsgi
+
+socket = my_app.sock
+chmod-socket = <span class="hljs-number">660</span>
+vacuum = <span class="hljs-literal">true</span>
+
+master = <span class="hljs-literal">true</span>
+processes = <span class="hljs-number">10</span>
+
+die-on-term = <span class="hljs-literal">true</span>
+</code></pre>
+<p>You can test the app.ini file with:</p>
+<pre><code class="language-bash hljs">/usr/<span class="hljs-built_in">local</span>/bin/uwsgi --ini /var/www/html/my_app/app.ini
+</code></pre>
+<h3>Change the project directory ownership to www-data</h3>
+<pre><code class="language-bash hljs">chown -R www-data.www-data /var/www/html/my_app
+</code></pre>
+<h3>Create a uWSGI startup file</h3>
+<p>Then create a systemctl startup file <code>/etc/systemd/system/my_app.service</code>:</p>
+<pre><code class="hljs javascript">[Unit]
+Description=<span class="hljs-string">"uWSGI server instance for my_app"</span>
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=<span class="hljs-regexp">/var/</span>www/html/my_app/
+Environment=FLASK_ENV=test
+ExecStart=<span class="hljs-regexp">/usr/</span>local/bin/uwsgi --ini /<span class="hljs-keyword">var</span>/www/html/my_app/app.ini
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<p>Start the process:</p>
+<pre><code class="language-bash hljs">sudo systemctl start my_app
+
+<span class="hljs-comment"># Check the status</span>
+sudo systemctl status my_app.service
+
+<span class="hljs-comment"># You should be able to see the socket with</span>
+ls /var/www/html/my_app/my_app.sock
+<span class="hljs-comment"># /var/www/html/my_app/my_app.sock</span>
+
+<span class="hljs-comment"># Enable it on startup</span>
+sudo systemctl <span class="hljs-built_in">enable</span> my_app
+</code></pre>
+<h3>Configure Nginx</h3>
+<p>Create a file <code>/etc/nginx/sites-enabled/my_app</code>:</p>
+<pre><code class="hljs php">server {
+    listen <span class="hljs-number">80</span>;
+    server_name myapp.com www.myapp.com; <span class="hljs-comment"># Replace with the actual domain name</span>
+
+    location / {
+        <span class="hljs-keyword">include</span> uwsgi_params;
+        uwsgi_pass unix:/<span class="hljs-keyword">var</span>/www/html/my_app/my_app.sock;
+    }
+}
+</code></pre>
+<p>Test your Nginx configuration and restart Nginx:</p>
+<pre><code class="language-bash hljs">nginx -t -c /etc/nginx/nginx.conf
+<span class="hljs-comment"># nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span>
+<span class="hljs-comment"># nginx: configuration file /etc/nginx/nginx.conf test is successful</span>
+
+/etc/init.d/nginx restart
+</code></pre>
+<p>You are all set, just visit the domain in your browser!</p>
+</div>
+</article>
+
+</main>
+
+<footer>
+    <section>
+        <p>© 2018 Gabriel Bordeaux</p>
+        <p>
+            <a href="https://twitter.com/gabrielbordeaux/">Twitter</a>
+            <a href="https://github.com/gabfl">GitHub</a>
+        </p>
+    </section>
+</footer>
+
+<!-- Google Analytics -->
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    
+    ga('create', 'UA-51075771-1', 'gab.lc');
+    ga('send', 'pageview');
+</script>
+
+
+</body></html>
