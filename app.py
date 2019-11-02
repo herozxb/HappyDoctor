@@ -1,27 +1,11 @@
-from __future__ import division, print_function
-# coding=utf-8
+#!/usr/bin/python3
 
-import os
-import io
-
-import numpy as np
-from PIL import Image
+#from flask import Flask
+from flask import Flask, request, render_template, jsonify
+app = Flask(__name__)
 import tensorflow as tf
 tf.enable_eager_execution()
 
-from gevent.pywsgi import WSGIServer
-from flask import Flask, request, render_template, jsonify
-
-
-app = Flask('HappyDoctor')
-
-# Model saved with Keras model.save()
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'crack_detection.h5')
-
-# Load trained model
-#model = tf.keras.models.load_model(MODEL_PATH)
-#model._make_predict_function()
-print('Model loaded. Start serving...')
 
 from docproduct.predictor import RetreiveQADoc
 
@@ -31,12 +15,9 @@ bert_ffn_weight_file = '/home/deep/bio-bert/newFolder/models/bertffn_crossentrop
 embedding_file = '/home/deep/bio-bert/Float16EmbeddingsExpanded5-27-19.pkl'
 doc = RetreiveQADoc(pretrained_path=pretrained_path,ffn_weight_file=None,bert_ffn_weight_file=bert_ffn_weight_file,embedding_file=embedding_file)
 
-print('Model loaded. Check http://127.0.0.1:8080/')
+def predict(question):
 
-
-def predict(img):
-
-    question_text = "anxiety"
+    question_text = question
 
     search_similarity_by = 'answer'  #@param ['answer', "question"]
 
@@ -47,28 +28,49 @@ def predict(img):
     returned_results = doc.predict( question_text ,
                       search_by=search_similarity_by, topk=number_results_toReturn, answer_only=answer_only)
     print('')
+    print(returned_results[0])
+    return returned_results
+'''
     for jk in range(len(returned_results)):
         print("Result ", jk+1)
         print(returned_results[jk])
         print('')
+
     return 0
+'''
 
 
-@app.route('/', methods=['GET'])
+@app.route("/")
 def index():
-    return render_template('index.html')
-    #return 0
+    predict()
+    return jsonify("num:1")
+
+@app.route("/hello")
+def hello():
+    predict()
+    return jsonify("num:1")
+
 
 @app.route('/predict', methods=['POST'])
 def predict_image_class():
-    img = request.files['file'].read()
-    img = Image.open(io.BytesIO(img))
-    prediction = predict(img)
-    #class_name = "crack" if prediction[0] < 0.5 else "no_crack"
-    #response = {"prediction": class_name}
-    return jsonify(0)
 
+    if request.method == 'POST':
+        """modify/update the information for <user_id>"""
+        # you can use <user_id>, which is a str but could
+        # changed to be int or whatever you want, along
+        # with your lxml knowledge to make the required
+        # changes
+        print("========1.0========")
+        data = request.get_json()
+        print(data["apikey"])
+        question = data["apikey"]
+        
+    prediction = predict(question)
+    #print("========1.0========")
+    #print(prediction)
+    
+    return jsonify(prediction)
 
 if __name__ == '__main__':
-    http_server = WSGIServer(('', 8080), app)
-    http_server.serve_forever()
+    # Will make the server available externally as well
+    app.run(host='0.0.0.0')

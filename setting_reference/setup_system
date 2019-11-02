@@ -1,0 +1,26 @@
+
+[Unit]
+Description=uWSGI instance to serve myproject
+After=network.target
+
+[Service]
+User=deep
+Group=www-data
+WorkingDirectory=/home/deep/my_app/
+Environment="PATH=/home/deep/.conda/envs/gpu/bin"
+ExecStart=/home/deep/.conda/envs/gpu/bin/uwsgi --ini /home/deep/my_app/app.ini
+
+[Install]
+WantedBy=multi-user.target
+
+
+server {
+    listen 81;
+    server_name 192.168.1.48 192.168.1.48;
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass unix:/home/deep/my_app/my_app.sock;
+    }
+}
+
